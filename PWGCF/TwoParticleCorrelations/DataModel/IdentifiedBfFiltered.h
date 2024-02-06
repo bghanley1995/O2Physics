@@ -8,8 +8,8 @@
 // In applying this license CERN does not waive the privileges and immunities
 // granted to it by virtue of its status as an Intergovernmental Organization
 // or submit itself to any jurisdiction.
-#ifndef PWGCF_TWOPARTICLECORRELATIONS_DATAMODEL_IDENTIFIEDBFFILTERED_H_
-#define PWGCF_TWOPARTICLECORRELATIONS_DATAMODEL_IDENTIFIEDBFFILTERED_H_
+#ifndef PWGCF_DATAMODEL_IDENTIFIEDBFFILTERED_H_
+#define PWGCF_DATAMODEL_IDENTIFIEDBFFILTERED_H_
 
 #include "Framework/ASoA.h"
 #include "Framework/AnalysisDataModel.h"
@@ -23,7 +23,7 @@ namespace identifiedbffilter
 {
 DECLARE_SOA_COLUMN(IdentifiedBfCFCollisionAccepted, collisionaccepted, uint8_t); //! If the collision/event has been accepted or not
 DECLARE_SOA_COLUMN(IdentifiedBfCFCollisionCentMult, centmult, float);            //! The centrality/multiplicity pecentile
-DECLARE_SOA_DYNAMIC_COLUMN(IsCollisionAccepted,                                  //! Is the collision/event accepted
+DECLARE_SOA_DYNAMIC_COLUMN(IsCollisionAccepted,                            //! Is the collision/event accepted
                            iscollisionaccepted,
                            [](uint8_t _collisionaccepted) -> uint8_t { return _collisionaccepted; });
 DECLARE_SOA_DYNAMIC_COLUMN(IsGenCollisionAccepted, //! Is the generated collision/event accepted
@@ -112,4 +112,4 @@ DECLARE_SOA_TABLE(IdentifiedBfCFGenTracksInfo, "AOD", "SCANDGENTRCKINF", //! The
 } // namespace aod
 } // namespace o2
 
-#endif // PWGCF_TWOPARTICLECORRELATIONS_DATAMODEL_IDENTIFIEDBFFILTERED_H_
+#endif // PWGCF_DATAMODEL_IDENTIFIEDBFFILTERED_H_
