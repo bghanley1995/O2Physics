@@ -26,6 +26,7 @@
 #include "Common/DataModel/TrackSelectionTables.h"
 #include "Common/DataModel/CollisionAssociationTables.h"
 #include "Framework/runDataProcessing.h"
+#include <algorithm>
 #include <TROOT.h>
 #include <TDatabasePDG.h>
 #include <TParameter.h>
