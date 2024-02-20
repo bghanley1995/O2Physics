@@ -768,6 +768,8 @@ struct IdentifiedBfFilterTracks {
   template <typename TrackObject>
   int8_t AcceptTrack(TrackObject const& track);
   template <typename TrackObject>
+  int8_t AcceptTrack(TrackObject const& track);
+  template <typename TrackObject>
   int8_t selectTrack(TrackObject const& track);
   template <typename CollisionObjects, typename TrackObject>
   int8_t selectTrackAmbiguousCheck(CollisionObjects const& collisions, TrackObject const& track);
@@ -1154,6 +1156,53 @@ inline int8_t IdentifiedBfFilterTracks::AcceptTrack(TrackObject const& track)
         if (track.sign() < 0) {
           trkMultNeg[sp]++; //<< Update Particle Multiplicity
           return speciesChargeValue1[sp] + 1;
+        }
+      }
+    }
+  }
+  return -1;
+}
+
+/// \brief Accepts or not the passed track
+/// \param track the track of interest
+/// \return the internal track id, -1 if not accepted
+/// TODO: the PID implementation
+/// For the time being we keep the convention
+/// - positive track pid even
+/// - negative track pid odd
+/// - charged hadron 0/1
+template <typename TrackObject>
+inline int8_t IdentifiedBfFilterTracks::AcceptTrack(TrackObject const& track)
+{
+  /* TODO: incorporate a mask in the scanned tracks table for the rejecting track reason */
+  if constexpr (framework::has_type_v<aod::mctracklabel::McParticleId, typename TrackObject::all_columns>) {
+    if (track.mcParticleId() < 0) {
+      return -1;
+    }
+  }
+
+  if (matchTrackType(track)) {
+    if (ptlow < track.pt() && track.pt() < ptup && etalow < track.eta() && track.eta() < etaup) {
+
+      MatchRecoGenSpecies sp = trackIdentification(track);
+      if (sp == kWrongSpecies){
+        return -1;
+      }
+      if (sp == kIdBfCharged){
+        if (track.sign() > 0) {
+          return 0;
+        }
+        if (track.sign() < 0) {
+          return 1;
+        }
+      }
+
+      if (sp > 0){
+        if (track.sign() > 0) {
+          return sp ;
+        }
+        if (track.sign() < 0) {
+          return sp+1;
         }
       }
     }
