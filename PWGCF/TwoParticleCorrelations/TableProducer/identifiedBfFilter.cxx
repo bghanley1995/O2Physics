@@ -1192,7 +1192,7 @@ inline int8_t IdentifiedBfFilterTracks::AcceptTrack(TrackObject const& track)
 template <typename TrackObject>
 inline int8_t IdentifiedBfFilterTracks::AcceptTrack(TrackObject const& track)
 {
-    fillTrackHistosBeforeSelection(track); // <Fill "before selection" histo
+  fillTrackHistosBeforeSelection(track); // <Fill "before selection" histo
 
   /* TODO: incorporate a mask in the scanned tracks table for the rejecting track reason */
   if constexpr (framework::has_type_v<aod::mctracklabel::McParticleId, typename TrackObject::all_columns>) {
@@ -1205,18 +1205,18 @@ inline int8_t IdentifiedBfFilterTracks::AcceptTrack(TrackObject const& track)
     if (ptlow < track.pt() && track.pt() < ptup && etalow < track.eta() && track.eta() < etaup) {
 
       MatchRecoGenSpecies sp = trackIdentification(track);
-      if (sp == kWrongSpecies){
+      if (sp == kWrongSpecies) {
         return -1;
       }
-      if (!(sp < 0)){
+      if (!(sp < 0)) {
         fillTrackHistosAfterSelection(track, sp); //<Fill accepted track histo with PID
         if (track.sign() > 0) {
           trkMultPos[sp]++; //<< Update Particle Multiplicity
-          return speciesChargeValue1[sp] ;
+          return speciesChargeValue1[sp];
         }
         if (track.sign() < 0) {
           trkMultNeg[sp]++; //<< Update Particle Multiplicity
-          return speciesChargeValue1[sp]+1;
+          return speciesChargeValue1[sp] + 1;
         }
       }
     }
