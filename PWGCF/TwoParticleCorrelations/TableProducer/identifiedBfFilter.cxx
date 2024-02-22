@@ -1113,10 +1113,28 @@ int8_t IdentifiedBfFilterTracks::selectTrack(TrackObject const& track)
   if (!(pid < 0)) {
     /* the track has been accepted */
     /* let's identify it */
+<<<<<<< HEAD
     if (pid > 1) {
       /* fill the charged histograms */
       fillTrackHistosAfterSelection(track, kIdBfCharged);
     }
+=======
+    //MatchRecoGenSpecies sp = trackIdentification(track);
+      if (pid>1) {
+        /* fill the charged histograms */
+        fillTrackHistosAfterSelection(track, kIdBfCharged);
+        /* update charged multiplicities */
+        /*if (pid % 2 == 0) {
+          trkMultPos[kIdBfCharged]++;
+        }
+        if (pid % 2 == 1) {
+          trkMultNeg[kIdBfCharged]++;
+        }*/
+      }
+      /* fill the species histograms */
+      //fillTrackHistosAfterSelection(track, sp);
+      /* update species multiplicities */
+>>>>>>> 5c3d1764 (Fixed Build Errors)
   }
   return pid;
 }
@@ -1193,7 +1211,7 @@ inline int8_t IdentifiedBfFilterTracks::AcceptTrack(TrackObject const& track)
       if (!(sp < 0)){
         fillTrackHistosAfterSelection(track, sp); //<Fill accepted track histo with PID
         if (track.sign() > 0) {
-          trkMultPos[sp]++ //<< Update Particle Multiplicity
+          trkMultPos[sp]++; //<< Update Particle Multiplicity
           return speciesChargeValue1[sp] ;
         }
         if (track.sign() < 0) {
