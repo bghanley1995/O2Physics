@@ -621,7 +621,7 @@ struct IdentifiedBfFilterTracks {
       fhDCAzB = new TH1F("DCAzB", "DCA_{z} distribution for reconstructed before;DCA_{z} (cm);counts", 1000, -4.0, 4.0);
       fhDCAzA = new TH1F("DCAzA", "DCA_{z} distribution for reconstructed;DCA_{z} (cm);counts", 1000, -4.0, 4.0);
       fhFineDCAzA = new TH1F("FineDCAzA", "DCA_{z} distribution for reconstructed;DCA_{z} (cm);counts", 4000, -1.0, 1.0);
-      fhParticleSpecies = new TH1F("fhParticleSpecies","Particle Species",(int)kIdBfNoOfSpecies,0,(int)kIdBfNoOfSpecies);
+      fhParticleSpecies = new TH1F("fhParticleSpecies", "Particle Species", (int)kIdBfNoOfSpecies, 0, (int)kIdBfNoOfSpecies);
 
       if (checkAmbiguousTracks) {
         /* let's allocate the ambigous tracks tracking histograms*/
