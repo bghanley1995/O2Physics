@@ -535,6 +535,7 @@ struct IdentifiedBfFilterTracks {
   Configurable<float> cfgTraceOutOfSpeciesParticles{"trackoutparticles", false, "Track the particles which are not e,mu,pi,K,p: false/true. Default false"};
   Configurable<int> cfgRecoIdMethod{"recoidmethod", 0, "Method for identifying reconstructed tracks: 0 No PID, 1 PID, 2 mcparticle. Default 0"};
   Configurable<o2::analysis::TrackSelectionCfg> cfgTrackSelection{"tracksel", {false, false, 0, 70, 0.8, 2.4, 3.2}, "Track selection: {useit: true/false, ongen: true/false, tpccls, tpcxrws, tpcxrfc, dcaxy, dcaz}. Default {false,0.70.0.8,2.4,3.2}"};
+  Configurable<bool> reqTOF{"requireTOF", false, "Require TOF data for PID. Default false"};
 
   OutputObj<TList> fOutput{"IdentifiedBfFilterTracksInfo", OutputObjHandlingPolicy::AnalysisObject};
   bool checkAmbiguousTracks = false;
@@ -1031,7 +1032,7 @@ inline MatchRecoGenSpecies IdentifiedBfFilterTracks::IdentifyTrack(TrackObject c
   using namespace o2::analysis::identifiedbffilter;
 
   float nsigmas[kIdBfNoOfSpecies];
-  if (track.p() < 0.8) {
+  if (track.p() < 0.8 && !reqTOF) {
     nsigmas[kIdBfCharged] = 999.0f;
     nsigmas[kIdBfElectron] = track.tpcNSigmaEl();
     nsigmas[kIdBfMuon] = track.tpcNSigmaMu();
@@ -1047,7 +1048,7 @@ inline MatchRecoGenSpecies IdentifiedBfFilterTracks::IdentifyTrack(TrackObject c
       nsigmas[kIdBfPion] = sqrtf(track.tpcNSigmaPi() * track.tpcNSigmaPi() + track.tofNSigmaPi() * track.tofNSigmaPi());
       nsigmas[kIdBfKaon] = sqrtf(track.tpcNSigmaKa() * track.tpcNSigmaKa() + track.tofNSigmaKa() * track.tofNSigmaKa());
       nsigmas[kIdBfProton] = sqrtf(track.tpcNSigmaPr() * track.tpcNSigmaPr() + track.tofNSigmaPr() * track.tofNSigmaPr());
-    } else {
+    } else if (!reqTOF){
       nsigmas[kIdBfCharged] = 999.0f;
       nsigmas[kIdBfElectron] = track.tpcNSigmaEl();
       nsigmas[kIdBfMuon] = track.tpcNSigmaMu();
@@ -1055,26 +1056,29 @@ inline MatchRecoGenSpecies IdentifiedBfFilterTracks::IdentifyTrack(TrackObject c
       nsigmas[kIdBfKaon] = track.tpcNSigmaKa();
       nsigmas[kIdBfProton] = track.tpcNSigmaPr();
     }
+    else{
+      return kWrongSpecies;
+    }
   }
   float min_nsigma = 999.0f;
   MatchRecoGenSpecies sp_min_nsigma = kWrongSpecies;
   for (int sp = 0; sp < kIdBfNoOfSpecies; ++sp) {
-    if (nsigmas[sp] < min_nsigma) {
-      min_nsigma = nsigmas[sp];
-      sp_min_nsigma = MatchRecoGenSpecies(sp);
+    if (nsigmas[sp] < min_nsigma) {//Check if species nsigma is less than current nsigma
+      min_nsigma = nsigmas[sp];//If yes, set species nsigma to current nsigma
+      sp_min_nsigma = MatchRecoGenSpecies(sp);//set current species sp number to current sp
     }
   }
   bool doublematch = false;
-  if (min_nsigma < minPIDSigma) {
-    for (int sp = 0; (sp < kIdBfNoOfSpecies) && !doublematch; ++sp) {
-      if (sp != sp_min_nsigma) {
-        if (nsigmas[sp] < minPIDSigma) {
-          doublematch = true;
+  if (min_nsigma < minPIDSigma) {//Check that current nsigma is less than required minimum
+    for (int sp = 0; (sp < kIdBfNoOfSpecies) && !doublematch; ++sp) {//iterate over all species while there's no double match and we're in the list
+      if (sp != sp_min_nsigma) {//for species not current minimum nsigma species
+        if (nsigmas[sp] < minPIDSigma) {//If secondary species nsigma ALSO less than required minimum
+          doublematch = true;//Set double match true
         }
       }
     }
-    if (doublematch) {
-      return kWrongSpecies;
+    if (doublematch) {//if double match true
+      return kWrongSpecies;//Return wrong species value
     } else {
       return sp_min_nsigma;
     }
