@@ -62,6 +62,7 @@ struct femtoDreamPairTaskTrackTrack {
     Configurable<bool> CPRPlotPerRadii{"Option.CPRPlotPerRadii", false, "Plot CPR per radii"};
     Configurable<float> CPRdeltaPhiMax{"Option.CPRdeltaPhiMax", 0.01, "Max. Delta Phi for Close Pair Rejection"};
     Configurable<float> CPRdeltaEtaMax{"Option.CPRdeltaEtaMax", 0.01, "Max. Delta Eta for Close Pair Rejection"};
+    Configurable<bool> DCACutPtDep{"Option.DCACutPtDep", false, "Use pt dependent dca cut"};
     ConfigurableAxis Dummy{"Option.Dummy", {1, 0, 1}, "Dummy axis"};
     Configurable<bool> SmearingByOrigin{"Option.SmearingByOrigin", false, "Obtain the smearing matrix differential in the MC origin of particle 1 and particle 2. High memory consumption"};
   } Option;
@@ -113,8 +114,9 @@ struct femtoDreamPairTaskTrackTrack {
                                               (aod::femtodreamparticle::pt < Track1.PtMax) &&
                                               (aod::femtodreamparticle::eta > Track1.EtaMin) &&
                                               (aod::femtodreamparticle::eta < Track1.EtaMax) &&
-                                              (aod::femtodreamparticle::tempFitVar > Track1.TempFitVarMin) &&
-                                              (aod::femtodreamparticle::tempFitVar < Track1.TempFitVarMax);
+                                              ifnode(Option.DCACutPtDep, nabs(aod::femtodreamparticle::tempFitVar) < 0.0105f + (0.035f / npow(aod::femtodreamparticle::pt, 1.1f)),
+                                                     (aod::femtodreamparticle::tempFitVar > Track1.TempFitVarMin) &&
+                                                       (aod::femtodreamparticle::tempFitVar < Track1.TempFitVarMax));
 
   Partition<soa::Join<aod::FDParticles, aod::FDMCLabels>> PartitionMCTrk1 = (aod::femtodreamparticle::partType == uint8_t(aod::femtodreamparticle::ParticleType::kTrack)) &&
                                                                             (ncheckbit(aod::femtodreamparticle::cut, Track1.CutBit)) &&
@@ -123,8 +125,9 @@ struct femtoDreamPairTaskTrackTrack {
                                                                             (aod::femtodreamparticle::pt < Track1.PtMax) &&
                                                                             (aod::femtodreamparticle::eta > Track1.EtaMin) &&
                                                                             (aod::femtodreamparticle::eta < Track1.EtaMax) &&
-                                                                            (aod::femtodreamparticle::tempFitVar > Track1.TempFitVarMin) &&
-                                                                            (aod::femtodreamparticle::tempFitVar < Track1.TempFitVarMax);
+                                                                            ifnode(Option.DCACutPtDep, nabs(aod::femtodreamparticle::tempFitVar) < 0.0105f + (0.035f / npow(aod::femtodreamparticle::pt, 1.1f)),
+                                                                                   (aod::femtodreamparticle::tempFitVar > Track1.TempFitVarMin) &&
+                                                                                     (aod::femtodreamparticle::tempFitVar < Track1.TempFitVarMax));
 
   /// Histogramming for particle 1
   FemtoDreamParticleHisto<aod::femtodreamparticle::ParticleType::kTrack, 1> trackHistoPartOne;
@@ -153,8 +156,9 @@ struct femtoDreamPairTaskTrackTrack {
                                               (aod::femtodreamparticle::pt < Track2.PtMax) &&
                                               (aod::femtodreamparticle::eta > Track2.EtaMin) &&
                                               (aod::femtodreamparticle::eta < Track2.EtaMax) &&
-                                              (aod::femtodreamparticle::tempFitVar > Track2.TempFitVarMin) &&
-                                              (aod::femtodreamparticle::tempFitVar < Track2.TempFitVarMax);
+                                              ifnode(Option.DCACutPtDep, nabs(aod::femtodreamparticle::tempFitVar) < 0.0105f + (0.035f / npow(aod::femtodreamparticle::pt, 1.1f)),
+                                                     (aod::femtodreamparticle::tempFitVar > Track2.TempFitVarMin) &&
+                                                       (aod::femtodreamparticle::tempFitVar < Track2.TempFitVarMax));
 
   Partition<soa::Join<aod::FDParticles, aod::FDMCLabels>> PartitionMCTrk2 = (aod::femtodreamparticle::partType == uint8_t(aod::femtodreamparticle::ParticleType::kTrack)) &&
                                                                             (ncheckbit(aod::femtodreamparticle::cut, Track2.CutBit)) &&
@@ -163,8 +167,9 @@ struct femtoDreamPairTaskTrackTrack {
                                                                             (aod::femtodreamparticle::pt < Track2.PtMax) &&
                                                                             (aod::femtodreamparticle::eta > Track2.EtaMin) &&
                                                                             (aod::femtodreamparticle::eta < Track2.EtaMax) &&
-                                                                            (aod::femtodreamparticle::tempFitVar > Track2.TempFitVarMin) &&
-                                                                            (aod::femtodreamparticle::tempFitVar < Track2.TempFitVarMax);
+                                                                            ifnode(Option.DCACutPtDep, nabs(aod::femtodreamparticle::tempFitVar) < 0.0105f + (0.035f / npow(aod::femtodreamparticle::pt, 1.1f)),
+                                                                                   (aod::femtodreamparticle::tempFitVar > Track2.TempFitVarMin) &&
+                                                                                     (aod::femtodreamparticle::tempFitVar < Track2.TempFitVarMax));
 
   /// Histogramming for track 2
   FemtoDreamParticleHisto<aod::femtodreamparticle::ParticleType::kTrack, 2> trackHistoPartTwo;
@@ -254,7 +259,9 @@ struct femtoDreamPairTaskTrackTrack {
     auto& workflows = context.services().get<RunningWorkflowInfo const>();
     for (DeviceSpec const& device : workflows.devices) {
       if (device.name.find("femto-dream-pair-task-track-track") != std::string::npos) {
-        if (containsNameValuePair(device.options, "Track1.CutBit", Track1.CutBit.value) &&
+        if (containsNameValuePair(device.options, "Option.DCACutPtDep", Option.DCACutPtDep.value) &&
+            containsNameValuePair(device.options, "Option.SameSpecies", Option.SameSpecies.value) &&
+            containsNameValuePair(device.options, "Track1.CutBit", Track1.CutBit.value) &&
             containsNameValuePair(device.options, "Track1.TPCBit", Track1.TPCBit.value) &&
             containsNameValuePair(device.options, "Track1.TPCTOFBit", Track1.TPCTOFBit.value) &&
             containsNameValuePair(device.options, "Track1.PIDThres", Track1.PIDThres.value) &&
