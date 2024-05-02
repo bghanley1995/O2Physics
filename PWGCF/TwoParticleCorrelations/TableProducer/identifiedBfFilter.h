@@ -157,8 +157,6 @@ bool dca2Dcut = false;
 float maxDCAz = 1e6f;
 float maxDCAxy = 1e6f;
 
-float minPIDSigma = 3.0;
-
 inline void initializeTrackSelection()
 {
   switch (tracktype) {
