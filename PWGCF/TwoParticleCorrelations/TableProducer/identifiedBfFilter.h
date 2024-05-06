@@ -49,13 +49,12 @@ namespace identifiedbffilter
 /// \enum MatchRecoGenSpecies
 /// \brief The species considered by the matching test
 enum MatchRecoGenSpecies {
-  kIdBfCharged = 0, ///< charged particle/track
-  kIdBfElectron,    ///< electron
-  kIdBfMuon,        ///< muon
+  kIdBfElectron = 0,    ///< electron
   kIdBfPion,        ///< pion
   kIdBfKaon,        ///< kaon
   kIdBfProton,      ///< proton
   kIdBfNoOfSpecies, ///< the number of considered species
+  kIdBfCharged = 4,
   kWrongSpecies = -1
 };
 
@@ -79,17 +78,15 @@ enum SpeciesPairMatch {
   kIdBfProtonProton      ///< Proton-Proton
 };
 
-const char* speciesName[kIdBfNoOfSpecies] = {"h", "e", "mu", "pi", "ka", "p"};
+const char* speciesName[kIdBfNoOfSpecies] = {"e", "pi", "ka", "p"};
 
-const char* speciesTitle[kIdBfNoOfSpecies] = {"", "e", "#mu", "#pi", "K", "p"};
+const char* speciesTitle[kIdBfNoOfSpecies] = {"e", "#pi", "K", "p"};
 
 const int speciesChargeValue1[kIdBfNoOfSpecies] = {
-  0, //<Unidentified hadron
-  2, //< electron
-  4, //< muon
-  6, //< pion
-  8, //< Kaon
-  10 //< proton
+  0, //< electron
+  2, //< pion
+  4, //< Kaon
+  6 //< proton
 };
 
 /// \enum SystemType

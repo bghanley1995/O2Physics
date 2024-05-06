@@ -141,10 +141,10 @@ TH1F* fhTrueDCAzA = nullptr;
 //============================================================================================
 // The IdentifiedBfFilter multiplicity counters
 //============================================================================================
-int trkMultPos[kIdBfNoOfSpecies];  // multiplicity of positive tracks
-int trkMultNeg[kIdBfNoOfSpecies];  // multiplicity of negative tracks
-int partMultPos[kIdBfNoOfSpecies]; // multiplicity of positive particles
-int partMultNeg[kIdBfNoOfSpecies]; // multiplicity of negative particles
+int trkMultPos[kIdBfNoOfSpecies+1];  // multiplicity of positive tracks
+int trkMultNeg[kIdBfNoOfSpecies+1];  // multiplicity of negative tracks
+int partMultPos[kIdBfNoOfSpecies+1]; // multiplicity of positive particles
+int partMultNeg[kIdBfNoOfSpecies+1]; // multiplicity of negative particles
 } // namespace o2::analysis::identifiedbffilter
 
 using namespace identifiedbffilter;
@@ -836,6 +836,13 @@ struct IdentifiedBfFilterTracks {
         pid = selectTrackAmbiguousCheck(collisions, track);
         if (!(pid < 0)) {
           naccepted++;
+          /* update charged multiplicities */
+          if (pid % 2 == 0) {
+            trkMultPos[kIdBfCharged]++;
+          }
+          if (pid % 2 == 1) {
+            trkMultNeg[kIdBfCharged]++;
+          }
           if (fullDerivedData) {
             LOGF(fatal, "Stored derived data not prepared for saving the proper new collision id");
             scannedtracks((track.template collision_as<soa::Join<aod::Collisions, aod::IdentifiedBfCFCollisionsInfo>>()).globalIndex(), pid, track.pt(), track.eta(), track.phi());
@@ -1011,7 +1018,6 @@ inline MatchRecoGenSpecies IdentifiedBfFilterTracks::IdentifyParticle(ParticleOb
   using namespace identifiedbffilter;
 
   constexpr int pdgcodeEl = 11;
-  constexpr int pdgcodeMu = 13;
   constexpr int pdgcodePi = 211;
   constexpr int pdgcodeKa = 321;
   constexpr int pdgcodePr = 2212;
@@ -1022,9 +1028,7 @@ inline MatchRecoGenSpecies IdentifiedBfFilterTracks::IdentifyParticle(ParticleOb
     case pdgcodeEl:
       return kIdBfElectron;
       break;
-    case pdgcodeMu:
-      return kIdBfMuon;
-      break;
+
     case pdgcodePi:
       return kIdBfPion;
       break;
@@ -1050,22 +1054,18 @@ inline MatchRecoGenSpecies IdentifiedBfFilterTracks::IdentifyTrack(TrackObject c
   using namespace o2::analysis::identifiedbffilter;
 
   fhNSigmaTPC[kIdBfElectron] -> Fill(track.tpcNSigmaEl(),track.p());
-  fhNSigmaTPC[kIdBfMuon] -> Fill(track.tpcNSigmaMu(),track.p());
   fhNSigmaTPC[kIdBfPion]->Fill(track.tpcNSigmaPi(),track.p());
   fhNSigmaTPC[kIdBfKaon]->Fill(track.tpcNSigmaKa(),track.p());
   fhNSigmaTPC[kIdBfProton]->Fill(track.tpcNSigmaPr(),track.p());
 
   fhNSigmaTOF[kIdBfElectron] -> Fill(track.tofNSigmaEl(),track.p());
-  fhNSigmaTOF[kIdBfMuon] -> Fill(track.tofNSigmaMu(),track.p());  
   fhNSigmaTOF[kIdBfPion]->Fill(track.tofNSigmaPi(),track.p());
   fhNSigmaTOF[kIdBfKaon]->Fill(track.tofNSigmaKa(),track.p());
   fhNSigmaTOF[kIdBfProton]->Fill(track.tofNSigmaPr(),track.p());  
 
   float nsigmas[kIdBfNoOfSpecies];
   if (track.p() < 0.8 && !reqTOF && !onlyTOF) {
-    nsigmas[kIdBfCharged] = 999.0f;
     nsigmas[kIdBfElectron] = track.tpcNSigmaEl();
-    nsigmas[kIdBfMuon] = track.tpcNSigmaMu();
     nsigmas[kIdBfPion] = track.tpcNSigmaPi();
     nsigmas[kIdBfKaon] = track.tpcNSigmaKa();
     nsigmas[kIdBfProton] = track.tpcNSigmaPr();
@@ -1073,9 +1073,7 @@ inline MatchRecoGenSpecies IdentifiedBfFilterTracks::IdentifyTrack(TrackObject c
   } else {
     /* introduce require TOF flag */
     if (track.hasTOF() && !onlyTOF) {
-      nsigmas[kIdBfCharged] = 999.0f;
       nsigmas[kIdBfElectron] = sqrtf(track.tpcNSigmaEl() * track.tpcNSigmaEl() + track.tofNSigmaEl() * track.tofNSigmaEl());
-      nsigmas[kIdBfMuon] = sqrtf(track.tpcNSigmaMu() * track.tpcNSigmaMu() + track.tofNSigmaMu() * track.tofNSigmaMu());
       nsigmas[kIdBfPion] = sqrtf(track.tpcNSigmaPi() * track.tpcNSigmaPi() + track.tofNSigmaPi() * track.tofNSigmaPi());
       nsigmas[kIdBfKaon] = sqrtf(track.tpcNSigmaKa() * track.tpcNSigmaKa() + track.tofNSigmaKa() * track.tofNSigmaKa());
       nsigmas[kIdBfProton] = sqrtf(track.tpcNSigmaPr() * track.tpcNSigmaPr() + track.tofNSigmaPr() * track.tofNSigmaPr());
@@ -1083,17 +1081,13 @@ inline MatchRecoGenSpecies IdentifiedBfFilterTracks::IdentifyTrack(TrackObject c
       
 
     } else if (!reqTOF|| !onlyTOF){
-      nsigmas[kIdBfCharged] = 999.0f;
       nsigmas[kIdBfElectron] = track.tpcNSigmaEl();
-      nsigmas[kIdBfMuon] = track.tpcNSigmaMu();
       nsigmas[kIdBfPion] = track.tpcNSigmaPi();
       nsigmas[kIdBfKaon] = track.tpcNSigmaKa();
       nsigmas[kIdBfProton] = track.tpcNSigmaPr();   
 
     } else if (onlyTOF){
-      nsigmas[kIdBfCharged] = 999.0f;
       nsigmas[kIdBfElectron] = track.tofNSigmaEl();
-      nsigmas[kIdBfMuon] = track.tofNSigmaMu();
       nsigmas[kIdBfPion] = track.tofNSigmaPi();
       nsigmas[kIdBfKaon] = track.tofNSigmaKa();
       nsigmas[kIdBfProton] = track.tofNSigmaPr();
@@ -1166,7 +1160,6 @@ MatchRecoGenSpecies IdentifiedBfFilterTracks::trackIdentification(TrackObject co
 /// For the time being we keep the convention
 /// - positive track pid even
 /// - negative track pid odd
-/// - charged hadron 0/1
 template <typename TrackObject>
 inline int8_t IdentifiedBfFilterTracks::AcceptTrack(TrackObject const& track)
 {
@@ -1290,13 +1283,15 @@ void IdentifiedBfFilterTracks::fillTrackHistosAfterSelection(TrackObject const& 
       fhFineDCAzA->Fill(track.dcaZ());
     }
   }
-  fhPA[sp]->Fill(track.p());
-  fhPtA[sp]->Fill(track.pt());
-  fhdEdxA[sp]->Fill(track.p(),track.tpcSignal());
-  if (track.sign() > 0) {
-    fhPtPosA[sp]->Fill(track.pt());
-  } else {
-    fhPtNegA[sp]->Fill(track.pt());
+  else{
+    fhPA[sp]->Fill(track.p());
+    fhPtA[sp]->Fill(track.pt());
+    fhdEdxA[sp]->Fill(track.p(),track.tpcSignal());
+    if (track.sign() > 0) {
+      fhPtPosA[sp]->Fill(track.pt());
+    } else {
+      fhPtNegA[sp]->Fill(track.pt());
+    }
   }
 }
 
@@ -1343,12 +1338,14 @@ void IdentifiedBfFilterTracks::fillParticleHistosAfterSelection(ParticleObject c
                                    (particle.vy() - collision.posY()) * (particle.vy() - collision.posY())));
     fhTrueDCAzA->Fill((particle.vz() - collision.posZ()));
   }
-  fhTruePA[sp]->Fill(particle.p());
-  fhTruePtA[sp]->Fill(particle.pt());
-  if (charge > 0) {
-    fhTruePtPosA[sp]->Fill(particle.pt());
-  } else {
-    fhTruePtNegA[sp]->Fill(particle.pt());
+  else{
+    fhTruePA[sp]->Fill(particle.p());
+    fhTruePtA[sp]->Fill(particle.pt());
+    if (charge > 0) {
+      fhTruePtPosA[sp]->Fill(particle.pt());
+    } else {
+      fhTruePtNegA[sp]->Fill(particle.pt());
+    }
   }
 }
 
