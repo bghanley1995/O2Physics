@@ -77,11 +77,7 @@ struct IdentifiedBfCorrelationsTask {
   /* the data collecting engine */
   template <bool smallsingles>
   struct DataCollectingEngine {
-<<<<<<< HEAD
     int nspecies = static_cast<int>(analysis::identifiedbffilter::kIdBfNoOfSpecies); /* Doing All Species */
-=======
-    int nspecies = static_cast<int> analysis::identifiedbffilter::kIdBfNoOfSpecies; /* Doing All Species */
->>>>>>> 0e9b7d24 (Please consider the following formatting changes)
     size_t nch = nspecies * 2;
 
     //============================================================================================
